@@ -9,7 +9,7 @@ def signup(request):
     form = CustomUserSignupForm()
     #착한 사용자
     if request.method == "POST":
-        CustomUserSignupForm(request.POST)
+        form = CustomUserSignupForm(request.POST)
         if form.is_valid():
             user = form.save()
             login(request, user)
@@ -34,6 +34,29 @@ def signin(request):
 def signout(request):
     logout(request)
     return redirect("home")
+
+
+def new_profile(request):
+    #로그인 하지 않았다면
+    if request.user.is_anonymous:
+        return redirect("home")
+    #로그인 했다면 user의 profile보기
+    profile, created = Profile.objects.get_or_create(user=request.user)#있으면 가져오고 없으면 만들기
+    return render(request, 'newProfile.html', {"profile": profile})
+
+
+def create_profile(request):
+    profile, created = Profile.objects.get_or_create(user=request.user)
+
+    if request.method == "POST":
+        profile.nickname = request.POST.get('nickname')
+        profile.image = request.FILES.get('image')
+        profile.save()
+        return redirect('users:new_profile')
+    
+    return render(request, "newProfile.html", {'profile': profile})
+
+
 
 # # 회원가입
 # def signup(request):
